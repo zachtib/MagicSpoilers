@@ -9,6 +9,9 @@ verify_ssl = true
 django = "*"
 gunicorn = "*"
 django-heroku = "*"
+requests = "*"
+urllib3 = "*"
+dataclasses-json = "*"
 
 [requires]
 python_version = "3.8"
