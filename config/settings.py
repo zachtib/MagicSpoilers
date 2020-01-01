@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'cli.apps.CliConfig',
+    'spoilers.apps.SpoilersConfig',
     'web.apps.WebConfig',
 ]
 
