@@ -12,10 +12,20 @@ from spoilers.converters import db_card_from_dataclass
 class Command(BaseCommand):
     help = 'Checks for new Cards, announces them, and saves them to the database'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--quiet',
+            action='store_true',
+            help='Just update the database, don\'t announce',
+        )
+
     def handle(self, *args, **options):
+        quiet = options['quiet']
         client: ScryfallClient = get_client()
         watched_sets = get_watched_sets()
-        announce_clients = get_all_channel_clients()
+        announce_clients = list()
+        if not quiet:
+            announce_clients = get_all_channel_clients()
         self.stdout.write(f'Announcing to {len(announce_clients)} channels')
 
         watched_set: MagicSet
@@ -30,7 +40,7 @@ class Command(BaseCommand):
                     new_cards.append(card)
             if len(new_cards) > 10:
                 new_cards = new_cards[:10]
-            if len(new_cards) > 0:
+            if len(new_cards) > 0 and not quiet:
                 for announce_client in announce_clients:
                     announce_client.send_cards(new_cards)
                 cards_to_insert = [db_card_from_dataclass(watched_set, card_data) for card_data in new_cards]
