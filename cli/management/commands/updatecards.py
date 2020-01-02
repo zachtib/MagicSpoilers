@@ -34,11 +34,11 @@ class Command(BaseCommand):
             cards_from_api = client.get_all_cards_for_set_code(watched_set.code)
             new_cards = list()
             for card in cards_from_api:
-                if len(new_cards) >= 10:
+                if len(new_cards) >= 10 and not quiet:
                     continue
                 if uuid.UUID(card.scryfall_id) not in known_card_ids_in_set:
                     new_cards.append(card)
-            if len(new_cards) > 10:
+            if len(new_cards) > 10 and not quiet:
                 new_cards = new_cards[:10]
             if len(new_cards) > 0 and not quiet:
                 for announce_client in announce_clients:
