@@ -14,31 +14,22 @@ class ScryfallClient(object):
     def get_url(self, url):
         return self.__BASE_URL + url
 
-    def get_all_sets(self):
+    def __scryfall_request(self, url, mapper):
         result = list()
-        url = self.get_url('/sets')
-        response = requests.get(url)
+        response = requests.get(self.get_url(url))
         if response.status_code != 200:
             # TODO: Log a warning here
             return result
         json = response.json()
         data = json['data']
         for item in data:
-            scryfall_set = ScryfallSet.from_dict(item)
-            print(scryfall_set.released_at.month)
-            result.append(scryfall_set)
+            result_object = mapper(item)
+            result.append(result_object)
         return result
 
+    def get_all_sets(self):
+        return self.__scryfall_request('/sets', ScryfallSet.from_dict)
+
     def get_all_cards_for_set_code(self, code) -> List[ScryfallCard]:
-        result = list()
-        url = self.get_url(f'/cards/search?order=spoiled&q=e={code}&unique=prints')
-        response = requests.get(url)
-        if response.status_code != 200:
-            # TODO: Log a warning here
-            return result
-        json = response.json()
-        data = json['data']
-        for item in data:
-            scryfall_card = ScryfallCard.from_dict(item)
-            result.append(scryfall_card)
-        return result
+        url = f'/cards/search?order=spoiled&q=e={code}&unique=prints'
+        return self.__scryfall_request(url, ScryfallCard.from_dict)
