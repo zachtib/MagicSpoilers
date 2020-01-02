@@ -18,7 +18,7 @@ class Channel(models.Model):
 
     def client(self):
         if self.kind == self.KIND_SLACK:
-            return SlackClient(self.webhook_url, self.channel_name)
+            return SlackClient(self.webhook_url, self.channel_name, self.supports_manamoji)
         else:
             return None
 

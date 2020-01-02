@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
 
 from dataclasses_json import dataclass_json
 
@@ -14,18 +14,19 @@ class SlackMessage:
 
 @dataclass_json
 @dataclass
-class ImageBlock:
-    image_url: str
-    alt_text: str
-    type: str = 'image'
-
-
-@dataclass_json
-@dataclass
 class SectionText:
     text: str
     emoji: bool = True
     type: str = 'plain_text'
+
+
+@dataclass_json
+@dataclass
+class ImageBlock:
+    image_url: str
+    alt_text: str
+    title: SectionText = SectionText("Image")
+    type: str = 'image'
 
 
 @dataclass_json
