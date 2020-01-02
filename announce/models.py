@@ -14,6 +14,7 @@ class Channel(models.Model):
     kind = models.CharField(max_length=2, choices=KIND_CHOICES)
     webhook_url = models.CharField(max_length=200)
     channel_name = models.CharField(max_length=200)
+    supports_manamoji = models.BooleanField()
 
     def client(self):
         if self.kind == self.KIND_SLACK:
