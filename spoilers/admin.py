@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from spoilers.models import MagicSet, MagicCard
 
 
@@ -9,3 +10,4 @@ class MagicCardInline(admin.TabularInline):
 @admin.register(MagicSet)
 class MagicSetAdmin(admin.ModelAdmin):
     inlines = [MagicCardInline]
+    list_display = ('name', 'code', 'release_date', 'watched')

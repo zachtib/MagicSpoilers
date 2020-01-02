@@ -8,6 +8,9 @@ class MagicSet(models.Model):
     release_date = models.DateField()
     watched = models.BooleanField()
 
+    def __str__(self):
+        return self.name
+
 
 class MagicCard(models.Model):
     scryfall_id = models.UUIDField()
