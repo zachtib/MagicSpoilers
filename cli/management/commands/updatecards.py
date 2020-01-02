@@ -40,9 +40,10 @@ class Command(BaseCommand):
                     new_cards.append(card)
             if len(new_cards) > 10 and not quiet:
                 new_cards = new_cards[:10]
-            if len(new_cards) > 0 and not quiet:
-                for announce_client in announce_clients:
-                    announce_client.send_cards(new_cards)
+            if len(new_cards) > 0:
+                if not quiet:
+                    for announce_client in announce_clients:
+                        announce_client.send_cards(new_cards)
                 cards_to_insert = [db_card_from_dataclass(watched_set, card_data) for card_data in new_cards]
                 save_cards(cards_to_insert)
             else:
