@@ -34,6 +34,6 @@ class ScryfallClient(object):
         return [convert_set(item) for item in api_result]
 
     def get_all_cards_for_set_code(self, code) -> List[MagicCard]:
-        url = f'/cards/search?order=spoiled&q=e={code}&unique=prints'
+        url = f'/cards/search?order=spoiled&q=e={code}&unique=card'
         api_result = self.__scryfall_request(url, ScryfallCard.from_dict)
         return [convert_card(card) for card in api_result]
