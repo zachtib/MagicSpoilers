@@ -13,6 +13,7 @@ class MagicSet:
     uri: str
     scryfall_uri: str
     released_at: str
+    icon_svg_uri: str
 
 
 @dataclass_json

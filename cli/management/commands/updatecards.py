@@ -7,6 +7,7 @@ from spoilers.scryfall import get_client, ScryfallClient
 from spoilers.queries import get_watched_sets, get_card_ids_in_set, save_cards
 from announce.queries import get_all_channel_clients
 from spoilers.converters import db_card_from_dataclass
+from status.models import StatusUpdate
 
 
 class Command(BaseCommand):
@@ -20,7 +21,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        quiet = options['quiet']
+        quiet = options.get('quiet', False)
         client: ScryfallClient = get_client()
         watched_sets = get_watched_sets()
         announce_clients = list()
@@ -46,5 +47,6 @@ class Command(BaseCommand):
                         announce_client.send_cards(new_cards)
                 cards_to_insert = [db_card_from_dataclass(watched_set, card_data) for card_data in new_cards]
                 save_cards(cards_to_insert)
+                StatusUpdate.objects.create()
             else:
                 self.stdout.write(f'No new cards found for {watched_set.name}')

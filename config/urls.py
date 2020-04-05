@@ -16,9 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from status.views import status_page
 from web.views import home
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('status/', status_page),
     path('', home),
 ]

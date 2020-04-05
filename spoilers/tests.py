@@ -9,8 +9,8 @@ from magic.models import MagicSet, MagicCard, CardFace
 class ConvertersTests(TestCase):
 
     def test_simple_conversion(self):
-        before = ScryfallSet('', '', '', '', '', '')
-        expected = MagicSet('', '', '', '', '', '')
+        before = ScryfallSet('', '', '', '', '', '', '')
+        expected = MagicSet('', '', '', '', '', '', '')
 
         actual = convert_set(before)
 

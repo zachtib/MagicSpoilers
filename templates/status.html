@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}MagicSpoilers Status{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>MagicSpoilers Status</h1>
+
+        {% if latest_update %}
+            <p>Last new information at {{ latest_update.timestamp }}</p>
+        {% endif %}
+
+        <table class="table">
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Release Date</th>
+                <th scope="col">Cards</th>
+                <th scope="col">Icon</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for watched_set in watched_sets %}
+                <tr>
+                    <th scope="row">{{ watched_set.code }}</th>
+                    <td>{{ watched_set.name }}</td>
+                    <td>{{ watched_set.release_date }}</td>
+                    <td>{{ watched_set.num_cards }}</td>
+                    <td><img style="height: 40px; width: 40px"
+                             src="{{ watched_set.icon_svg_uri }}"
+                             alt="Set symbol for {{ watched_set.name }}"></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}

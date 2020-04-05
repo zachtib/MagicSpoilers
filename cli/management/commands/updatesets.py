@@ -6,6 +6,7 @@ from spoilers.converters import db_model_from_dataclass
 from spoilers.models import MagicSet
 from spoilers.queries import get_all_sets_ids, unwatch_released_sets
 from spoilers.scryfall import get_client, ScryfallClient
+from status.models import StatusUpdate
 
 
 class Command(BaseCommand):
@@ -23,6 +24,10 @@ class Command(BaseCommand):
             new_records = [db_model_from_dataclass(api) for api in filtered_sets]
             for watched_set in filter(lambda i: i.watched, new_records):
                 self.stdout.write(f'Watching a new set: {watched_set.name}')
-            MagicSet.objects.bulk_create(new_records)
+
+            if len(new_records) > 0:
+                MagicSet.objects.bulk_create(new_records)
+                StatusUpdate.objects.create()
+
         else:
             self.stderr.write('Did not get any sets back')

@@ -14,7 +14,8 @@ def db_model_from_dataclass(data: MagicSetDataClass) -> MagicSet:
                     name=data.name,
                     code=data.code,
                     release_date=release_date,
-                    watched=watched)
+                    watched=watched,
+                    icon_svg_uri=data.icon_svg_uri)
 
 
 def db_card_from_dataclass(magic_set: MagicSet, data: MagicCardDataClass) -> MagicCard:
