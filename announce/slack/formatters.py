@@ -6,10 +6,14 @@ re_regular_mana = re.compile(r'{(\w+)}')
 re_hybrid_mana = re.compile(r'{(\w+)/(\w+)}')
 
 
-def format_mana_costs(string: str) -> str:
-    string = re_hybrid_mana.sub(r':mana-\1\2:', string)
-    string = re_regular_mana.sub(r":mana-\1:", string)
-    return string
+def format_mana_costs(string: str) -> Optional[str]:
+    try:
+        string = re_hybrid_mana.sub(r':mana-\1\2:', string)
+        string = re_regular_mana.sub(r":mana-\1:", string)
+        return string
+    except TypeError:
+        pass
+    return None
 
 
 def format_cardface_manamoji(face: CardFace) -> CardFace:

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
 
 from dataclasses_json import dataclass_json
 
@@ -33,12 +33,12 @@ class ScryfallCardFace:
     name: str
     type_line: str
     colors: List[str] = field(default_factory=list)
-    loyalty: str = None
-    mana_cost: str = None
-    oracle_text: str = None
-    power: str = None
-    toughness: str = None
-    image_uris: ScryfallImages = None
+    loyalty: Optional[str] = None
+    mana_cost: Optional[str] = None
+    oracle_text: Optional[str] = None
+    power: Optional[str] = None
+    toughness: Optional[str] = None
+    image_uris: Optional[ScryfallImages] = None
 
 
 @dataclass_json
@@ -54,9 +54,9 @@ class ScryfallCard:
     type_line: str
     card_faces: List[ScryfallCardFace] = field(default_factory=list)
     color_indicator: List[str] = field(default_factory=list)
-    loyalty: str = None
-    mana_cost: str = None
-    oracle_text: str = None
-    power: str = None
-    toughness: str = None
-    image_uris: ScryfallImages = None
+    loyalty: Optional[str] = None
+    mana_cost: Optional[str] = None
+    oracle_text: Optional[str] = None
+    power: Optional[str] = None
+    toughness: Optional[str] = None
+    image_uris: Optional[ScryfallImages] = None
