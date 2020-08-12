@@ -4,14 +4,15 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+coverage = "*"
 
 [packages]
-django = "*"
-gunicorn = "*"
-django-heroku = "*"
-requests = "*"
-urllib3 = "*"
-dataclasses-json = "*"
+django = "==3.0.7"
+gunicorn = "==20.0.4"
+django-heroku = "==0.3.1"
+requests = "==2.22.0"
+urllib3 = "==1.25.10"
+dataclasses-json = "==0.3.7"
 
 [requires]
 python_version = "3.8"
