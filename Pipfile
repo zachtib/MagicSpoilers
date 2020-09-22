@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 coverage = "*"
+responses = "*"
 
 [packages]
 django = "==3.0.7"

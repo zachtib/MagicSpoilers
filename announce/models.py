@@ -9,7 +9,7 @@ class ChannelManager(models.Manager):
 
     def clients(self):
         result = []
-        for channel in self.get_queryset():
+        for channel in self.get_queryset().all():
             client = channel.client()
             if client is not None:
                 result.append(client)

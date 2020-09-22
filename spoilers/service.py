@@ -10,7 +10,6 @@ class SpoilersService:
 
     def __init__(self):
         self.scryfall = ScryfallClient()
-        self.channel_clients = Channel.objects.clients()
 
     def update_sets(self):
         MagicSet.objects.unwatch_released_sets()
@@ -47,7 +46,8 @@ class SpoilersService:
 
     def update_cards(self, quiet=False):
         watched_sets = MagicSet.objects.watched()
-        print(f'Announcing to {len(self.channel_clients)} channels')
+        channel_clients = Channel.objects.clients()
+        print(f'Announcing to {len(channel_clients)} channels')
 
         # noinspection PyBroadException
         try:
@@ -65,7 +65,7 @@ class SpoilersService:
                     new_cards = new_cards[:10]
                 if len(new_cards) > 0:
                     if not quiet:
-                        for announce_client in self.channel_clients:
+                        for announce_client in channel_clients:
                             announce_client.send_cards(new_cards)
                     cards_to_insert = [watched_set.create_card_from_dataclass(card_data) for card_data in new_cards]
                     MagicCard.objects.bulk_create(cards_to_insert)
@@ -74,7 +74,7 @@ class SpoilersService:
                     print(f'No new cards found for {watched_set.name}')
         except Exception as e:
             if not quiet:
-                for announce_client in self.channel_clients:
+                for announce_client in channel_clients:
                     announce_client.send_text(str(e))
             else:
                 print(str(e))
