@@ -23,6 +23,7 @@ class MagicSetManager(models.Manager):
         today = date.today()
         return self.get_queryset().filter(
             watched=True,
+            continuous=False,
             release_date__isnull=False,
             release_date__lt=today
         ).update(watched=False)
@@ -35,6 +36,7 @@ class MagicSet(models.Model):
     release_date = models.DateField()
     watched = models.BooleanField()
     icon_svg_uri = models.CharField(max_length=100)
+    continuous = models.BooleanField(default=False)
 
     def get_card_ids(self):
         """
