@@ -12,3 +12,4 @@ class MagicSetAdmin(admin.ModelAdmin):
     inlines = [MagicCardInline]
     list_display = ('name', 'code', 'release_date', 'watched')
     list_filter = ('release_date', 'watched')
+    search_fields = ['name', 'code']
