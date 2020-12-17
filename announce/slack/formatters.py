@@ -10,7 +10,7 @@ def format_mana_costs(string: str) -> Optional[str]:
     try:
         string = re_hybrid_mana.sub(r':mana-\1\2:', string)
         string = re_regular_mana.sub(r":mana-\1:", string)
-        return string
+        return string.lower()
     except TypeError:
         pass
     return None
