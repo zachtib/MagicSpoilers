@@ -4,7 +4,8 @@ from announce.models import Channel
 from status.models import StatusUpdate
 from .models import MagicSet, MagicCard
 from .scryfall import ScryfallClient
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
+
 
 class SpoilersService:
 
@@ -49,37 +50,41 @@ class SpoilersService:
         channel_clients = Channel.objects.clients()
         print(f'Announcing to {len(channel_clients)} channels')
 
-        # noinspection PyBroadException
-        try:
-            watched_set: MagicSet
-            for watched_set in watched_sets:
-                known_card_ids_in_set = watched_set.get_card_ids()
-                cards_from_api = self.scryfall.get_all_cards_for_set_code(watched_set.code)
-                new_cards = list()
-                for card in cards_from_api:
-                    if len(new_cards) >= 10 and not quiet:
-                        continue
-                    if uuid.UUID(card.scryfall_id) not in known_card_ids_in_set:
-                        try:
-                            card_to_insert = watched_set.create_card_from_dataclass(card)
+        watched_set: MagicSet
+        for watched_set in watched_sets:
+            known_card_ids_in_set = watched_set.get_card_ids()
+            cards_from_api = self.scryfall.get_all_cards_for_set_code(watched_set.code)
+            new_cards = list()
+            for card in cards_from_api:
+                if len(new_cards) >= 10 and not quiet:
+                    continue
+                if uuid.UUID(card.scryfall_id) not in known_card_ids_in_set:
+                    card_to_insert = watched_set.create_card_from_dataclass(card)
+                    failed = False
+                    try:
+                        with transaction.atomic():
                             card_to_insert.save()
-                            new_cards.append(card)
+                        new_cards.append(card)
+                    except IntegrityError as e:
+                        # uuid already exists, card may have been mistakenly added to another set
+                        failed = True
+                        duplicate = MagicCard.objects.get(scryfall_id=card.scryfall_id)
+                        duplicate.delete()
+                    if failed:
+                        try:
+                            with transaction.atomic():
+                                card_to_insert.save()
                         except IntegrityError as e:
+                            # Error still happening
                             if not quiet:
                                 for announce_client in channel_clients:
                                     announce_client.send_text(f'Encountered IntegrityError inserting {card}: {e}')
-                if len(new_cards) > 10 and not quiet:
-                    new_cards = new_cards[:10]
-                if len(new_cards) > 0:
-                    if not quiet:
-                        for announce_client in channel_clients:
-                            announce_client.send_cards(new_cards)
-                    StatusUpdate.objects.create()
-                else:
-                    print(f'No new cards found for {watched_set.name}')
-        except Exception as e:
-            if not quiet:
-                for announce_client in channel_clients:
-                    announce_client.send_text(str(e))
+            if len(new_cards) > 10 and not quiet:
+                new_cards = new_cards[:10]
+            if len(new_cards) > 0:
+                if not quiet:
+                    for announce_client in channel_clients:
+                        announce_client.send_cards(new_cards)
+                StatusUpdate.objects.create()
             else:
-                print(str(e))
+                print(f'No new cards found for {watched_set.name}')

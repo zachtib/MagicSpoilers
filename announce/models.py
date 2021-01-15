@@ -1,8 +1,9 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-from announce.echo.echoclient import EchoClient
+from announce.testing.echoclient import EchoClient
 from announce.slack import SlackClient
+from announce.testing.testclient import TestClient
 
 
 class ChannelManager(models.Manager):
@@ -19,9 +20,11 @@ class ChannelManager(models.Manager):
 class Channel(models.Model):
     KIND_ECHO = "EC"
     KIND_SLACK = "SL"
+    KIND_TESTING = "TE"
     KIND_CHOICES = (
         (KIND_SLACK, "Slack"),
-        (KIND_ECHO, "Echo (for testing)")
+        (KIND_ECHO, "Echo (for testing)"),
+        (KIND_TESTING, "Test (for testing)"),
     )
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
@@ -37,6 +40,8 @@ class Channel(models.Model):
             return SlackClient(self.webhook_url, self.channel_name, self.supports_manamoji)
         elif self.kind == self.KIND_ECHO:
             return EchoClient()
+        elif self.kind == self.KIND_TESTING:
+            return TestClient()
         else:
             return None
 
