@@ -4,7 +4,7 @@ from announce.models import Channel
 from status.models import StatusUpdate
 from .models import MagicSet, MagicCard
 from .scryfall import ScryfallClient
-
+from django.db import IntegrityError
 
 class SpoilersService:
 
@@ -60,15 +60,20 @@ class SpoilersService:
                     if len(new_cards) >= 10 and not quiet:
                         continue
                     if uuid.UUID(card.scryfall_id) not in known_card_ids_in_set:
-                        new_cards.append(card)
+                        try:
+                            card_to_insert = watched_set.create_card_from_dataclass(card)
+                            card_to_insert.save()
+                            new_cards.append(card)
+                        except IntegrityError as e:
+                            if not quiet:
+                                for announce_client in channel_clients:
+                                    announce_client.send_text(f'Encountered IntegrityError inserting {card}: {e}')
                 if len(new_cards) > 10 and not quiet:
                     new_cards = new_cards[:10]
                 if len(new_cards) > 0:
                     if not quiet:
                         for announce_client in channel_clients:
                             announce_client.send_cards(new_cards)
-                    cards_to_insert = [watched_set.create_card_from_dataclass(card_data) for card_data in new_cards]
-                    MagicCard.objects.bulk_create(cards_to_insert)
                     StatusUpdate.objects.create()
                 else:
                     print(f'No new cards found for {watched_set.name}')
