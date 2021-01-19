@@ -1,5 +1,6 @@
-from magic.models import CardFace, MagicCard, MagicSet
-from .models import ScryfallCardFace, ScryfallCard, ScryfallImages, ScryfallSet
+from .models import CardFace, MagicCard, MagicSet
+
+from scryfall.models import ScryfallCardFace, ScryfallCard, ScryfallImages, ScryfallSet
 
 
 def get_image_uri(images: ScryfallImages) -> str:

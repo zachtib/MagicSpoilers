@@ -1,20 +1,21 @@
 import uuid
 
+from django.db import IntegrityError, transaction
+
 from announce.models import Channel
+from magic.repository import MagicRepository, SearchSpec
 from status.models import StatusUpdate
 from .models import MagicSet, MagicCard
-from .scryfall import ScryfallClient
-from django.db import IntegrityError, transaction
 
 
 class SpoilersService:
 
     def __init__(self):
-        self.scryfall = ScryfallClient()
+        self.repo = MagicRepository()
 
     def update_sets(self):
         MagicSet.objects.unwatch_released_sets()
-        api_sets = self.scryfall.get_all_sets()
+        api_sets = self.repo.sets()
 
         if api_sets is not None:
             print(f'Number of sets from the api: {len(api_sets)}')
@@ -32,7 +33,7 @@ class SpoilersService:
             print('Did not get any sets back')
 
     def update_icons(self):
-        api_sets = self.scryfall.get_all_sets()
+        api_sets = self.repo.sets()
 
         if api_sets is not None:
             print(f'Number of sets from the api: {len(api_sets)}')
@@ -53,7 +54,7 @@ class SpoilersService:
         watched_set: MagicSet
         for watched_set in watched_sets:
             known_card_ids_in_set = watched_set.get_card_ids()
-            cards_from_api = self.scryfall.get_all_cards_for_set_code(watched_set.code)
+            cards_from_api = self.repo.search(SearchSpec(expansion=watched_set.code, order='spoiled', unique='card'))
             new_cards = list()
             for card in cards_from_api:
                 if len(new_cards) >= 10 and not quiet:

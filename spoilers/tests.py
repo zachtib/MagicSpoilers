@@ -10,11 +10,11 @@ from django.test import TestCase
 
 from announce.models import Channel
 from announce.testing.testclient import TestClient
+from magic.converters import convert_set, convert_card
 from magic.models import MagicSet, MagicCard, CardFace
-from .scryfall import ScryfallSet, ScryfallCard, ScryfallCardFace
-from .scryfall.converters import convert_set, convert_card
-from .service import SpoilersService
+from scryfall.models import ScryfallSet, ScryfallCard, ScryfallCardFace
 from .models import MagicSet as DbSet, MagicCard as DbCard
+from .service import SpoilersService
 
 
 class ConvertersTests(TestCase):
