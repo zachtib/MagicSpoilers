@@ -1,5 +1,7 @@
 from typing import List
 
+import requests
+
 from announce.client import BaseAnnounceClient
 from magic.models import MagicCard
 
@@ -18,7 +20,14 @@ class DiscordClient(BaseAnnounceClient):
         pass
 
     def send_text(self, text: str) -> bool:
-        pass
+        data = {
+            'content': text,
+        }
+        response = requests.post(self.__webhook_url, data=data)
+        print(response)
+        print(response.content)
+        print(response.text)
+        return True
 
     def send_error(self, error: str) -> bool:
-        pass
+        return self.send_text(error)
