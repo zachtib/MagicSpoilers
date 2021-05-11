@@ -1,9 +1,10 @@
 from typing import List
 
+from announce.client import BaseAnnounceClient
 from magic.models import MagicCard
 
 
-class TestClient:
+class TestClient(BaseAnnounceClient):
 
     def __init__(self):
         self.cards = []
