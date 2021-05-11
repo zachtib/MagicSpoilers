@@ -3,7 +3,7 @@ from typing import List, Union
 import requests
 
 from magic.models import MagicCard, CardFace
-from .formatters import format_card_manamoji, format_cardface_manamoji, format_mana_costs, get_image_or_none, format_card_or_face
+from announce.formatters import format_card_manamoji, get_image_or_none, format_card_or_face
 from .models import SlackMessage, SectionWithImage, SectionText, ImageBlock, SectionBlock
 from ..client import BaseAnnounceClient
 
