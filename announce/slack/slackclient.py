@@ -5,9 +5,10 @@ import requests
 from magic.models import MagicCard, CardFace
 from .formatters import format_card_manamoji, format_cardface_manamoji, format_mana_costs, get_image_or_none, format_card_or_face
 from .models import SlackMessage, SectionWithImage, SectionText, ImageBlock, SectionBlock
+from ..client import BaseAnnounceClient
 
 
-class SlackClient:
+class SlackClient(BaseAnnounceClient):
     __webhook_url: str
     __channel: str
     __use_manamoji: bool
@@ -64,3 +65,7 @@ class SlackClient:
         # TODO: Add some logging here
         print(f'Failed to send {failed_to_send}')
         return False
+
+    def send_error(self, error: str) -> bool:
+        self.send_text(error)
+        return True
