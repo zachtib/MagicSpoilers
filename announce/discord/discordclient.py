@@ -1,8 +1,10 @@
+import json
 from typing import List
 
 import requests
 
 from announce.client import BaseAnnounceClient
+from announce.formatters import format_card_or_face
 from magic.models import MagicCard
 
 
@@ -17,16 +19,41 @@ class DiscordClient(BaseAnnounceClient):
         self.__use_manamoji = use_manamoji
 
     def send_cards(self, cards: List[MagicCard]) -> bool:
-        pass
+        failed_to_send = list()
+        for card in cards:
+            content = []
+            embeds = []
+            if card.is_dfc():
+                for face in card.card_faces:
+                    content.append(format_card_or_face(face))
+                    embeds.append({
+                        'image': {
+                            'url': face.image_uri
+                        }
+                    })
+            else:
+                content.append(format_card_or_face(card))
+                embeds.append({
+                    'image': {
+                        'url': card.image_uri
+                    }
+                })
+            data = json.dumps({
+                'content': '\n'.join(content),
+                'embeds': embeds,
+            })
+            requests.post(self.__webhook_url, data=data, headers={
+                'Content-Type': 'application/json'
+            })
+        for card in failed_to_send:
+            self.send_error(f'Error sending {card.name}')
+        return True
 
     def send_text(self, text: str) -> bool:
         data = {
             'content': text,
         }
-        response = requests.post(self.__webhook_url, data=data)
-        print(response)
-        print(response.content)
-        print(response.text)
+        requests.post(self.__webhook_url, data=data)
         return True
 
     def send_error(self, error: str) -> bool:

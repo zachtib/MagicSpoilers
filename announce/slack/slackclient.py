@@ -2,10 +2,10 @@ from typing import List, Union
 
 import requests
 
-from magic.models import MagicCard, CardFace
+from announce.client import BaseAnnounceClient
 from announce.formatters import format_card_manamoji, get_image_or_none, format_card_or_face
+from magic.models import MagicCard, CardFace
 from .models import SlackMessage, SectionWithImage, SectionText, ImageBlock, SectionBlock
-from ..client import BaseAnnounceClient
 
 
 class SlackClient(BaseAnnounceClient):
