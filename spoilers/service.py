@@ -64,7 +64,8 @@ class SpoilersService:
                     try:
                         with transaction.atomic():
                             card_to_insert.save()
-                        new_cards.append(card)
+                        if card.name not in ['Plains', 'Island', 'Swamp', 'Mountain', 'Forest']:
+                            new_cards.append(card)
                     except IntegrityError as e:
                         # uuid already exists, card may have been mistakenly added to another set
                         failed = True

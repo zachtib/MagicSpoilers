@@ -131,9 +131,8 @@ class SpoilerServiceTestCase(TestCase):
 
             self.assertEqual(DbCard.objects.count(), 1)
 
-    @patch('builtins.print')
-    def test_update_cards_calls_channel(self, mock_print):
-        DbSet.objects.create(
+    def create_test_set_user_and_channel(self):
+        test_set = DbSet.objects.create(
             scryfall_id=uuid4(),
             code='abc',
             name='Test Set',
@@ -142,12 +141,17 @@ class SpoilerServiceTestCase(TestCase):
             icon_svg_uri='asdf.png',
         )
         user = User.objects.create_user('asdf')
-        Channel.objects.create(
+        channel = Channel.objects.create(
             owner=user,
             name='test',
             kind=Channel.KIND_ECHO,
             supports_manamoji=False
         )
+        return test_set, user, channel
+
+    @patch('builtins.print')
+    def test_update_cards_calls_channel(self, mock_print):
+        _, _, _ = self.create_test_set_user_and_channel()
         with responses.RequestsMock() as rm:
             rm.add('GET', 'https://api.scryfall.com/cards/search?order=spoiled&q=e=abc&unique=card', search_response)
             self.service.update_cards()
@@ -165,6 +169,65 @@ class SpoilerServiceTestCase(TestCase):
                                  image_uri='https://c1.scryfall.com/file/scryfall-cards/png/front/6/4/645cfc1b-76f2-4823-9fb0-03cb009f8b32.png?1562736801')
 
             mock_print.assert_called_with(expected)
+
+    def basic_land_response(self, land) -> str:
+        return '''
+        {
+            "object": "list",
+            "total_cards": 1,
+            "has_more": false,
+            "data": [
+                {
+                    "object": "card",
+                    "id": "645cfc1b-76f2-4823-9fb0-03cb009f8b32",
+                    "lang": "en",
+                    "oracle_id": "ed66cd31-958f-4b28-82a3-e04acc819afc",
+                    "uri": "https://api.scryfall.com/cards/645cfc1b-76f2-4823-9fb0-03cb009f8b32",
+                    "name": "%s",
+                    "scryfall_uri": "https://scryfall.com/card/dom/113/yargle-glutton-of-urborg?utm_source=api",
+                    "layout": "normal",
+                    "type_line": "Basic Land - %s",
+                    "oracle_text": "",
+                    "image_uris": {
+                        "small": "https://c1.scryfall.com/file/scryfall-cards/small/front/6/4/645cfc1b-76f2-4823-9fb0-03cb009f8b32.jpg?1562736801",
+                        "normal": "https://c1.scryfall.com/file/scryfall-cards/normal/front/6/4/645cfc1b-76f2-4823-9fb0-03cb009f8b32.jpg?1562736801",
+                        "large": "https://c1.scryfall.com/file/scryfall-cards/large/front/6/4/645cfc1b-76f2-4823-9fb0-03cb009f8b32.jpg?1562736801",
+                        "png": "https://c1.scryfall.com/file/scryfall-cards/png/front/6/4/645cfc1b-76f2-4823-9fb0-03cb009f8b32.png?1562736801",
+                        "art_crop": "https://c1.scryfall.com/file/scryfall-cards/art_crop/front/6/4/645cfc1b-76f2-4823-9fb0-03cb009f8b32.jpg?1562736801",
+                        "border_crop": "https://c1.scryfall.com/file/scryfall-cards/border_crop/front/6/4/645cfc1b-76f2-4823-9fb0-03cb009f8b32.jpg?1562736801"
+                    }
+                }
+            ]
+        }
+        '''.strip() % (land, land)
+
+    @patch('builtins.print')
+    def test_plains_does_not_call_channel(self, mock_print):
+        self.create_test_set_user_and_channel()
+        with responses.RequestsMock() as rm:
+            rm.add('GET', 'https://api.scryfall.com/cards/search?order=spoiled&q=e=abc&unique=card',
+                   self.basic_land_response('Plains'))
+            self.service.update_cards()
+
+            self.assertEqual(DbCard.objects.count(), 1)
+
+            mock_print.assert_called_with('No new cards found for Test Set')
+            card: DbCard = DbCard.objects.first()
+            self.assertEqual(card.name, 'Plains')
+
+    @patch('builtins.print')
+    def test_swamp_does_not_call_channel(self, mock_print):
+        self.create_test_set_user_and_channel()
+        with responses.RequestsMock() as rm:
+            rm.add('GET', 'https://api.scryfall.com/cards/search?order=spoiled&q=e=abc&unique=card',
+                   self.basic_land_response('Swamp'))
+            self.service.update_cards()
+
+            self.assertEqual(DbCard.objects.count(), 1)
+
+            mock_print.assert_called_with('No new cards found for Test Set')
+            card: DbCard = DbCard.objects.first()
+            self.assertEqual(card.name, 'Swamp')
 
 
 class IntegrityErrorTestCase(TestCase):
