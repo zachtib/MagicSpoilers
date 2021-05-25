@@ -4,6 +4,7 @@ from typing import List
 import requests
 
 from announce.client import BaseAnnounceClient
+from announce.emoji_formatters import BaseManamojiFormatter
 from announce.formatters import format_card_or_face
 from magic.models import MagicCard
 
@@ -11,16 +12,17 @@ from magic.models import MagicCard
 class DiscordClient(BaseAnnounceClient):
     __webhook_url: str
     __channel: str
-    __use_manamoji: bool
+    __manamoji_formatter: BaseManamojiFormatter
 
-    def __init__(self, webhook_url: str, channel: str = None, use_manamoji: bool = False):
+    def __init__(self, webhook_url: str, channel: str, manamoji_formatter: BaseManamojiFormatter):
         self.__webhook_url = webhook_url
         self.__channel = channel
-        self.__use_manamoji = use_manamoji
+        self.__manamoji_formatter = manamoji_formatter
 
     def send_cards(self, cards: List[MagicCard]) -> bool:
         failed_to_send = list()
         for card in cards:
+            card = self.__manamoji_formatter.format_card(card)
             content = []
             embeds = []
             if card.is_dfc():

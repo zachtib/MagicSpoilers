@@ -144,7 +144,7 @@ class SpoilerServiceTestCase(TestCase):
         channel = Channel.objects.create(
             owner=user,
             name='test',
-            kind=Channel.KIND_ECHO,
+            kind=Channel.Kind.ECHO,
             supports_manamoji=False
         )
         return test_set, user, channel

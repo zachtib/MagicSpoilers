@@ -3,20 +3,21 @@ from typing import List, Union
 import requests
 
 from announce.client import BaseAnnounceClient
-from announce.formatters import format_card_manamoji, get_image_or_none, format_card_or_face
+from announce.formatters import get_image_or_none, format_card_or_face
 from magic.models import MagicCard, CardFace
 from .models import SlackMessage, SectionWithImage, SectionText, ImageBlock, SectionBlock
+from ..emoji_formatters import BaseManamojiFormatter
 
 
 class SlackClient(BaseAnnounceClient):
     __webhook_url: str
     __channel: str
-    __use_manamoji: bool
+    __manamoji_formatter: BaseManamojiFormatter
 
-    def __init__(self, webhook_url: str, channel: str = None, use_manamoji: bool = False):
+    def __init__(self, webhook_url: str, channel: str, manamoji_formatter: BaseManamojiFormatter):
         self.__webhook_url = webhook_url
         self.__channel = channel
-        self.__use_manamoji = use_manamoji
+        self.__manamoji_formatter = manamoji_formatter
 
     def send(self, message: SlackMessage) -> bool:
         message.channel = self.__channel
@@ -46,8 +47,7 @@ class SlackClient(BaseAnnounceClient):
     def send_cards(self, cards: List[MagicCard]) -> bool:
         failed_to_send = list()
         for card in cards:
-            if self.__use_manamoji:
-                card = format_card_manamoji(card)
+            card = self.__manamoji_formatter.format_card(card)
             blocks = list()
 
             if card.is_dfc():

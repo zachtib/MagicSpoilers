@@ -1,10 +1,13 @@
 from typing import List, Optional
+from django.utils.translation import gettext_lazy as _
 
 from django.contrib.auth.models import User
 from django.db import models
 
 from announce.client import BaseAnnounceClient
 from announce.discord.discordclient import DiscordClient
+from announce.emoji_formatters import BaseManamojiFormatter, NoopManamojiFormatter, HyphenatedManamojiFormatter, \
+    NonHyphenatedManamojiFormatter
 from announce.testing.echoclient import EchoClient
 from announce.slack import SlackClient
 from announce.testing.testclient import TestClient
@@ -22,36 +25,46 @@ class ChannelManager(models.Manager):
 
 
 class Channel(models.Model):
-    KIND_ECHO = "EC"
-    KIND_SLACK = "SL"
-    KIND_DISCORD = "DI"
-    KIND_TESTING = "TE"
-    KIND_CHOICES = (
-        (KIND_SLACK, "Slack"),
-        (KIND_DISCORD, "Discord"),
-        (KIND_ECHO, "Echo (for testing)"),
-        (KIND_TESTING, "Test (for testing)"),
-    )
+    class Kind(models.TextChoices):
+        ECHO = 'EC', 'Echo (for testing)'
+        SLACK = 'SL', 'Slack'
+        DISCORD = 'DI', 'Discord'
+        TESTING = 'TE', 'Testing'
+
+    class EmojiStyle(models.TextChoices):
+        NONE = 'NO', 'None'
+        HYPHENATED = 'HY', 'Hyphenated'
+        NON_HYPHENATED = 'NH', 'Non-hyphenated'
+
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
-    kind = models.CharField(max_length=2, choices=KIND_CHOICES)
+    kind = models.CharField(max_length=2, choices=Kind.choices)
     webhook_url = models.CharField(max_length=200, blank=True)
     channel_name = models.CharField(max_length=200, blank=True)
     supports_manamoji = models.BooleanField()
+    manamoji_style = models.CharField(max_length=2, choices=EmojiStyle.choices, default=EmojiStyle.NONE)
 
     objects = ChannelManager()
 
     def client(self) -> Optional[BaseAnnounceClient]:
-        if self.kind == self.KIND_SLACK:
+        if self.kind == Channel.Kind.SLACK:
             return SlackClient(self.webhook_url, self.channel_name, self.supports_manamoji)
-        elif self.kind == self.KIND_DISCORD:
+        elif self.kind == Channel.Kind.DISCORD:
             return DiscordClient(self.webhook_url, self.channel_name, self.supports_manamoji)
-        elif self.kind == self.KIND_ECHO:
+        elif self.kind == Channel.Kind.ECHO:
             return EchoClient()
-        elif self.kind == self.KIND_TESTING:
+        elif self.kind == Channel.Kind.TESTING:
             return TestClient()
         else:
             return None
+
+    def emoji_formatter(self) -> BaseManamojiFormatter:
+        if self.supports_manamoji == False or self.manamoji_style == Channel.EmojiStyle.NONE:
+            return NoopManamojiFormatter()
+        elif self.manamoji_style == Channel.EmojiStyle.HYPHENATED:
+            return HyphenatedManamojiFormatter()
+        elif self.manamoji_style == Channel.EmojiStyle.NON_HYPHENATED:
+            return NonHyphenatedManamojiFormatter()
 
     def __str__(self):
         return self.name

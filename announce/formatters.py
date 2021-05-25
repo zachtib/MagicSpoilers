@@ -1,34 +1,6 @@
-from magic.models import MagicCard, CardFace
-import re
 from typing import Union, Optional
 
-re_regular_mana = re.compile(r'{(\w+)}')
-re_hybrid_mana = re.compile(r'{(\w+)/(\w+)}')
-
-
-def format_mana_costs(string: str) -> Optional[str]:
-    try:
-        string = re_hybrid_mana.sub(r':mana-\1\2:', string)
-        string = re_regular_mana.sub(r":mana-\1:", string)
-        return string.lower()
-    except TypeError:
-        pass
-    return None
-
-
-def format_cardface_manamoji(face: CardFace) -> CardFace:
-    face.mana_cost = format_mana_costs(face.mana_cost)
-    face.oracle_text = format_mana_costs(face.oracle_text)
-
-    return face
-
-
-def format_card_manamoji(card: MagicCard) -> MagicCard:
-    card.mana_cost = format_mana_costs(card.mana_cost)
-    card.oracle_text = format_mana_costs(card.oracle_text)
-    card.card_faces = [format_cardface_manamoji(face) for face in card.card_faces]
-
-    return card
+from magic.models import MagicCard, CardFace
 
 
 def get_image_or_none(item: Union[MagicCard, CardFace]) -> str:
