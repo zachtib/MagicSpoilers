@@ -1,5 +1,4 @@
 from typing import List, Optional
-from django.utils.translation import gettext_lazy as _
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -8,8 +7,8 @@ from announce.client import BaseAnnounceClient
 from announce.discord.discordclient import DiscordClient
 from announce.emoji_formatters import BaseManamojiFormatter, NoopManamojiFormatter, HyphenatedManamojiFormatter, \
     NonHyphenatedManamojiFormatter
-from announce.testing.echoclient import EchoClient
 from announce.slack import SlackClient
+from announce.testing.echoclient import EchoClient
 from announce.testing.testclient import TestClient
 
 
@@ -48,9 +47,9 @@ class Channel(models.Model):
 
     def client(self) -> Optional[BaseAnnounceClient]:
         if self.kind == Channel.Kind.SLACK:
-            return SlackClient(self.webhook_url, self.channel_name, self.supports_manamoji)
+            return SlackClient(self.webhook_url, self.channel_name, self.emoji_formatter())
         elif self.kind == Channel.Kind.DISCORD:
-            return DiscordClient(self.webhook_url, self.channel_name, self.supports_manamoji)
+            return DiscordClient(self.webhook_url, self.channel_name, self.emoji_formatter())
         elif self.kind == Channel.Kind.ECHO:
             return EchoClient()
         elif self.kind == Channel.Kind.TESTING:
@@ -59,7 +58,7 @@ class Channel(models.Model):
             return None
 
     def emoji_formatter(self) -> BaseManamojiFormatter:
-        if self.supports_manamoji == False or self.manamoji_style == Channel.EmojiStyle.NONE:
+        if not self.supports_manamoji or self.manamoji_style == Channel.EmojiStyle.NONE:
             return NoopManamojiFormatter()
         elif self.manamoji_style == Channel.EmojiStyle.HYPHENATED:
             return HyphenatedManamojiFormatter()
