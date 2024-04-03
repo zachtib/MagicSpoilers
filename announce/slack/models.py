@@ -25,7 +25,7 @@ class SectionText:
 class ImageBlock:
     image_url: str
     alt_text: str
-    title: SectionText = SectionText("Image")
+    title: SectionText = field(default_factory=lambda: SectionText("Image"))
     type: str = 'image'
 
 
